@@ -284,3 +284,22 @@ You probably already have many ideas about what you want to build next. Here are
 - Build a different bot for Google Chat that has nothing to do with ChatGPT
 - Build a different product powered by ChatGPT that has nothing to do with Google Chat
 
+
+
+<br />
+
+## Sponsor
+
+This code lab was built by the creator of GQueues.
+
+<a href="https://www.gqueues.com">
+<img 
+    src="https://app.gqueues.com/images/5.7.1/gqueues_logo.svg"
+    alt="GQueues"
+    width="200">
+    </a>
+
+### Prioritize your team’s work with a task manager that helps you get more out of Google Workspace.
+
+<br />
+<br />
