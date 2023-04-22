@@ -1,0 +1,6 @@
+# Function dependencies, for example:
+# package>=version
+
+functions-framework==3.*
+google-cloud-logging==3.0.0
+
