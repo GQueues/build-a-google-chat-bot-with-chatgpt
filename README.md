@@ -85,6 +85,24 @@ Build a "Choose Your Own Adventure" story generator.
 
 * **Cameron Henneke** - [GQueues](https://www.gqueues.com)
 
+<br />
+
+## Sponsor
+
+This code lab was built by the creator of GQueues.
+
+<a href="https://www.gqueues.com">
+<img 
+    src="https://app.gqueues.com/images/5.7.1/gqueues_logo.svg"
+    alt="GQueues"
+    width="200">
+    </a>
+
+### Prioritize your team’s work with a task manager that helps you get more out of Google Workspace.
+
+<br />
+<br />
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
