@@ -28,7 +28,12 @@ Name the project `chatgpt-bot` and click **CREATE**.
 
 
 ### 2. Create a Google Cloud Function
-Select your new project as the active project and create a new function in [Google Cloud Functions](https://console.cloud.google.com/functions/list).
+Select your new project as the active project and create a new function in [Google Cloud Functions](https://console.cloud.google.com/functions/list) by clicking the **CREATE FUNCTION** button.
+
+<img 
+    src="images/chat_create_cloud_function.png"
+    alt="Create Cloud Function"
+    width="500">
 
 When prompted, enable the required APIs by clicking **ENABLE**.
 
