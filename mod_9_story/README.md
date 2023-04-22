@@ -290,7 +290,7 @@ You probably already have many ideas about what you want to build next. Here are
 
 ## Sponsor
 
-This code lab was built by the creator of GQueues.
+This code lab was built by the makers of GQueues.
 
 <a href="https://www.gqueues.com">
 <img 

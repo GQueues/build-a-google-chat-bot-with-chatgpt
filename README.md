@@ -89,7 +89,7 @@ Build a "Choose Your Own Adventure" story generator.
 
 ## Sponsor
 
-This code lab was built by the creator of GQueues.
+This code lab was built by the makers of GQueues.
 
 <a href="https://www.gqueues.com">
 <img 
