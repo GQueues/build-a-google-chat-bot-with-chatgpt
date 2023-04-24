@@ -1,7 +1,7 @@
 # Module 3 - Verify Requests
 At this point the Google Cloud Function will respond to any GET or POST request that is sent to the Trigger URL, which means the incoming data can't be trusted.
 
-This module builds on Module 1 by verifying a request actually comes from the Google Workspace bot and not a random person triggering the Cloud Functions URL.
+This module builds on Module 2 by verifying a request actually comes from the Google Workspace bot and not a random person triggering the Cloud Functions URL.
 
 ## Prerequisites
 

@@ -160,6 +160,6 @@ You can track down the issue by using the [Logs Explorer](https://console.cloud.
 Fix any issues and re-deploy the function.
 
 ## Next Steps
-Your bot can now process an incoming message and respond using ChatGPT. Since your OpenAI account is being charged for all processing you'll want to ensure incoming requests are verified messages from your bot and not some malware or other bad actor.
+Your bot can now process an incoming message and respond using ChatGPT. However, right now anyone could send a JSON object to your Cloud Function URL and it would process the request, whether the data is real or not (such as user_id, email, etc..). To allow your code to trust the incoming data you must first check if the request is sent by Google Chat and is valid.
 
 Continue with [Module 3](../mod_3_verify#readme) to verify a request to your Cloud Function before processing its message.
