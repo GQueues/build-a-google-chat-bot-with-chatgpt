@@ -122,6 +122,12 @@ def process_message_event(event_data):
 
 ```
 
+
+> The bot sends a JSON object of data to the Cloud Function for every event that occurs.
+>
+> View example JSON for the [ADDED_TO_SPACE event](ADDED_TO_SPACE_event.md) and [MESSAGE event](MESSAGE_event.md).
+
+
 ### 7. Update `requirements.txt`
 Open `requirements.txt` in the editor and add the lines below to specify the dependencies for the function.
 

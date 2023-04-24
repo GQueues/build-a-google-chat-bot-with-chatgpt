@@ -140,6 +140,8 @@ def process_chat_message(user_text, thread_id, guidance=None):
     return chat_response
 ```
 
+> View example JSON for a [Slash Command MESSAGE event](SLASH_COMMAND_event.md).
+
 ### 3. Deploy the changes
 Click **DEPLOY** to set your changes live.
 
