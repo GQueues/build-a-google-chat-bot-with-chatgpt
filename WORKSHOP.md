@@ -48,6 +48,7 @@ Complete these tasks so you're ready when the workshop begins:
 <br />
 That's it!
 <br />
+<br />
 You're now ready for when the workshop begins.
 <br />
 <br />
