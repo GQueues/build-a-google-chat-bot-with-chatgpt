@@ -48,6 +48,8 @@ Complete these tasks so you're ready when the workshop begins:
 <br />
 That's it!
 <br />
+You're now ready for when the workshop begins.
+<br />
 <br />
 
 ## [Go to the workshop overview](README.md#build-a-google-chat-bot-powered-by-chatgpt)
