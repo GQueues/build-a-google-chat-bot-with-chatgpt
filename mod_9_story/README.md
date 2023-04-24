@@ -288,6 +288,13 @@ You probably already have many ideas about what you want to build next. Here are
 
 <br />
 
+## Workshop Feedback
+Let me know what you thought of this workshop!
+
+Please [fill out the Workshop Feedback Survey](https://forms.gle/u3zye3iRwraNZpur9) - it's only 3 questions!
+
+<br />
+
 ## Sponsor
 
 This code lab was built by the makers of GQueues.
