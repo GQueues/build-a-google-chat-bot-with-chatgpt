@@ -18,15 +18,36 @@ Create a new `/story` command by clicking **ADD A NEW SLASH COMMAND**:
 
 Click **DONE** and **SAVE** to apply your changes.
 
-### 2. Create a new file called `story_util.py`
+### 2. Add new libraries
+Open the `requirements.txt` file and add the four libraries below as a dependencies so you can use them in code. 
+
+```python
+# Function dependencies, for example:
+# package>=version
+
+functions-framework==3.*
+google-cloud-logging==3.0.0
+openai==0.27.2
+oauth2client==4.1.3
+google-cloud-ndb==2.1.1
+google-auth==2.17.2 # <-- add this line
+google-api-python-client==2.84.0 # <-- add this line
+google-cloud-tasks==2.13.1 # <-- add this line
+requests==2.28.2 # <-- add this line
+```
+
+### 3. Create a new file called `story_util.py`
 Create a new file called `story_util.py` with the following code that takes a story prompt and generates a title, cover image, and chapters with images for each part of the story.
 
 ```python
+import logging
+import google.auth
+from apiclient.discovery import build
+
 import gpt_util
 import datastore_util
-import logging
 
-def handle_story_command(user_text, thread_id):
+def handle_story_command(thread_id, user_text, message_id_to_update):
     """Handles user prompt for a new story."""
 
     title_widget = create_story_title(user_text)
@@ -53,7 +74,12 @@ def handle_story_command(user_text, thread_id):
         ]
     }
 
-    return cards
+    placeholder_text = "A custom story just for you..."
+    update_placeholder_card(thread_id, message_id_to_update, placeholder_text)
+
+    send_asynchronous_chat_message(thread_id, cards)
+
+
 
 def create_story_title(user_text):
     """Uses ChatGPT to create title of story based on topic provided."""
@@ -126,8 +152,11 @@ def create_story_chapter(messages):
     return widgets, messages
 
 
-def process_story_message(thread_id, user_text, messages):
+def process_story_message(thread_id, user_text, message_id_to_update):
     """Processes a response from user for the next path of the story."""
+
+    thread_obj = datastore_util.get_thread(thread_id)
+    messages = thread_obj.get_messages()
 
     # wrap up the story after 4 choices
     if len(messages) == 8:
@@ -147,10 +176,210 @@ def process_story_message(thread_id, user_text, messages):
         ]
     }
 
-    return cards
+    chapter_number = len(messages) // 2
+    placeholder_text = f"Chapter {chapter_number}"
+    update_placeholder_card(thread_id, message_id_to_update, placeholder_text)
+
+    send_asynchronous_chat_message(thread_id, cards)
+
+
+def send_generating_story_card(thread_id):
+    """Sends a "Generating..." placeholder card.
+
+    Returns message_id so the message can be updated later.
+    """
+    body = { "text" : "Generating..."}
+    message_id = send_asynchronous_chat_message(thread_id, body)
+
+    return message_id
+
+
+def update_placeholder_card(thread_id, message_id, content):
+    """Updates the "Generating story..." placeholder card with new text."""
+
+    body = { "text" : content }
+    send_asynchronous_chat_message(thread_id, body, message_id=message_id)
+
+
+
+def send_asynchronous_chat_message(thread_id, body, message_id=None):
+    """Send a chat message to a space asynchronously.
+
+    Returns the message_id of the message created or updated.
+
+    This message is NOT a direct response to an incoming message request.
+    Uses the Chat REST API. 
+    """
+
+    space_id = thread_id.split("-")[1]
+    space_name = f"spaces/{space_id}"
+
+    SCOPES = ['https://www.googleapis.com/auth/chat.bot']
+    credentials, project = google.auth.default(scopes=SCOPES)
+    chat = build('chat', 'v1', credentials=credentials)
+
+    # update content of an existing message
+    if message_id:
+        response_obj = chat.spaces().messages().update(
+            name=message_id,
+            updateMask='text',
+            body=body
+        ).execute()
+
+    # create a new message
+    else:
+        response_obj = chat.spaces().messages().create(
+            parent=space_name,
+            body=body
+        ).execute()
+
+    return response_obj.get("name")
 ```
 
-### 3. Update `models.py`
+### 4. Create a new file called `task_util.py`
+Create a new file called `task_util.py` with the following code that creates tasks to run and process in the background using Google Cloud Tasks.
+
+```python
+import logging
+import json
+from google.cloud import tasks_v2
+import openai
+import story_util
+import auth_util
+import datastore_util
+
+# TODO: Update with Google Cloud ProjectID
+PROJECT_ID = "XXXXXXX"
+
+# TODO: Update with Cloud Functions Service Account
+SERVICE_ACCOUNT_EMAIL = 'xxxxxxxxxxxxxxx'
+
+# TODO: Update with Cloud Functions Trigger Url
+TRIGGER_URL = "xxxxxxxxxxxxx'
+
+
+def run_as_background_task(action, thread_id, user_text, message_id_to_update):
+    """Creates a task in Google Cloud Tasks for the specified action."""
+
+    tasks_client = tasks_v2.CloudTasksClient()
+
+    payload = {
+        "background_task" : True,
+        "action" : action,
+        "thread_id" : thread_id,
+        "user_text" : user_text,
+        "message_id_to_update" : message_id_to_update
+    }
+
+    logging.info(f"run_as_background_task: {action}")
+
+    # Convert dict to JSON string
+    payload = json.dumps(payload)
+
+    LOCATION = "us-central1"
+    QUEUE = "story-queue"
+
+    parent = tasks_client.queue_path(PROJECT_ID, LOCATION, QUEUE)
+
+    converted_payload = payload.encode()
+
+    task = {
+        "http_request": {
+            "http_method": tasks_v2.HttpMethod.POST,
+            "url": TRIGGER_URL,
+            "headers": {"Content-type": "application/json"},
+            "oidc_token": {
+                "service_account_email": SERVICE_ACCOUNT_EMAIL,
+                "audience": TRIGGER_URL
+            },
+            "body" : converted_payload
+        }
+    }
+
+    response = tasks_client.create_task(request={"parent": parent, "task": task})
+
+
+def process_background_task(request):
+    """Processes a request from Google Cloud Tasks.
+    
+    Verifies request before processing.
+    """
+
+    if not auth_util.is_backround_request_valid(request):
+        return "Unauthorized request"
+
+    task_data = request.get_json()
+    logging.info(f"task_data: {task_data}")
+
+    action = task_data.get("action")
+    thread_id = task_data.get("thread_id")
+    user_text = task_data.get("user_text")
+    message_id_to_update = task_data.get("message_id_to_update")
+    space_id = thread_id.split("-")[1]
+    space_name = f"spaces/{space_id}"
+    user_id = thread_id.split("-")[0]
+
+    # get api_key
+    api_key = datastore_util.get_api_key(user_id)
+    openai.api_key = api_key
+
+    if action == "process_story_message":
+        story_util.process_story_message(thread_id, user_text, message_id_to_update)
+    
+    elif action == "handle_story_command":
+        story_util.handle_story_command(thread_id, user_text, message_id_to_update)
+    
+    return {}
+```
+
+### 5. Update `auth_util.py`
+
+Import `google.auth`, `requests` and the constants from `task-util`  at the top of `auth_util.py` so you can use them in this file.
+
+```python
+import logging
+from oauth2client import client
+import google.auth # <-- add this line
+import requests # <-- add this line
+from task_util import SERVICE_ACCOUNT_EMAIL, TRIGGER_URL # <-- add this line
+```
+
+Add a new function `is_backround_request_valid()` to the bottom of `auth_util.py`.
+This will verify the background requests coming from Google Cloud Tasks.
+
+```python
+def is_backround_request_valid(request):
+    """Validates a background request from Cloud Tasks."""
+
+    CERTS_PATH = "https://www.googleapis.com/oauth2/v1/certs"
+    TASK_ISSUER = "https://accounts.google.com"
+
+    try:
+        # Get the token from the Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            raise Exception('Authorization header is missing')
+        
+        token = auth_header.split(' ')[1]
+
+        response = requests.get(CERTS_PATH)
+        certs = response.json()
+
+        # Validate the token.
+        id_token = google.auth.jwt.decode(token, certs=certs, audience=TRIGGER_URL)
+
+        logging.info(f"background request id_token: {id_token}")
+
+        if id_token and id_token['iss'] == TASK_ISSUER:
+            return True
+        else:
+            return False
+
+    except:
+        return False
+```
+
+### 5. Update `models.py`
 Add a `thread_type` attribute to the Thread entity to track if the bot currently in a story.
 ```python
 class Thread(ndb.Model):
@@ -162,7 +391,7 @@ class Thread(ndb.Model):
         return self.message_history['messages']
 ```
 
-### 4. Update `datastore_util.py`
+### 6. Update `datastore_util.py`
 Update the `store_messages()` function definition to accept a new optional `thread_type` parameter and store it on the entity. Use the code below to update the function:
 
 ```python
@@ -182,8 +411,8 @@ def store_messages(thread_id, messages=[], thread_type=""):
         thread.put()
 ```
 
-### 5. Update `main.py`
-Import `story_util` at the top of `main.py` so you can use it in this file.
+### 7. Update `main.py`
+Import `story_util` and `task_util` at the top of `main.py` so you can use them in this file.
 ```python
 import flask
 import functions_framework
@@ -197,6 +426,7 @@ import random
 import string
 import dialog_util
 import story_util # <-- add this line
+import task_util # <-- add this line
 ```
 
 Update the code in `process_message_event()` to handle the `/story` command:
@@ -213,7 +443,9 @@ def process_message_event(event_data):
   
     # /story
     elif command_id == 6:
-        return story_util.handle_story_command(user_text, thread_id)
+        message_id_to_update = story_util.send_generating_story_card(thread_id)
+        task_util.run_as_background_task("handle_story_command", thread_id, user_text, message_id_to_update)
+        return {}
 
     # >>>>>> new code above >>>>>>>>
 
@@ -241,7 +473,9 @@ def process_chat_message(user_text, thread_id, guidance=None):
             # >>>>>> new code below >>>>>>>>
 
             if thread_obj.thread_type == "story":
-                return story_util.process_story_message(thread_id, user_text, messages)
+                message_id_to_update = story_util.send_generating_story_card(thread_id)
+                task_util.run_as_background_task("process_story_message", thread_id, user_text, message_id_to_update)
+                return {}
 
             # >>>>>> new code above >>>>>>>>
     
@@ -253,7 +487,7 @@ def process_chat_message(user_text, thread_id, guidance=None):
 
 <br />
 
-### 6. Deploy the changes
+### 8. Deploy the changes
 Click **DEPLOY** to set your changes live.
 
 

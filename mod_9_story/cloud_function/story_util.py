@@ -1,8 +1,11 @@
+import logging
+import google.auth
+from apiclient.discovery import build
+
 import gpt_util
 import datastore_util
-import logging
 
-def handle_story_command(user_text, thread_id):
+def handle_story_command(thread_id, user_text, message_id_to_update):
     """Handles user prompt for a new story."""
 
     title_widget = create_story_title(user_text)
@@ -29,7 +32,12 @@ def handle_story_command(user_text, thread_id):
         ]
     }
 
-    return cards
+    placeholder_text = "A custom story just for you..."
+    update_placeholder_card(thread_id, message_id_to_update, placeholder_text)
+
+    send_asynchronous_chat_message(thread_id, cards)
+
+
 
 def create_story_title(user_text):
     """Uses ChatGPT to create title of story based on topic provided."""
@@ -102,8 +110,11 @@ def create_story_chapter(messages):
     return widgets, messages
 
 
-def process_story_message(thread_id, user_text, messages):
+def process_story_message(thread_id, user_text, message_id_to_update):
     """Processes a response from user for the next path of the story."""
+
+    thread_obj = datastore_util.get_thread(thread_id)
+    messages = thread_obj.get_messages()
 
     # wrap up the story after 4 choices
     if len(messages) == 8:
@@ -123,4 +134,61 @@ def process_story_message(thread_id, user_text, messages):
         ]
     }
 
-    return cards
+    chapter_number = len(messages) // 2
+    placeholder_text = f"Chapter {chapter_number}"
+    update_placeholder_card(thread_id, message_id_to_update, placeholder_text)
+
+    send_asynchronous_chat_message(thread_id, cards)
+
+
+def send_generating_story_card(thread_id):
+    """Sends a "Generating..." placeholder card.
+
+    Returns message_id so the message can be updated later.
+    """
+    body = { "text" : "Generating..."}
+    message_id = send_asynchronous_chat_message(thread_id, body)
+
+    return message_id
+
+
+def update_placeholder_card(thread_id, message_id, content):
+    """Updates the "Generating story..." placeholder card with new text."""
+
+    body = { "text" : content }
+    send_asynchronous_chat_message(thread_id, body, message_id=message_id)
+
+
+
+def send_asynchronous_chat_message(thread_id, body, message_id=None):
+    """Send a chat message to a space asynchronously.
+
+    Returns the message_id of the message created or updated.
+
+    This message is NOT a direct response to an incoming message request.
+    Uses the Chat REST API. 
+    """
+
+    space_id = thread_id.split("-")[1]
+    space_name = f"spaces/{space_id}"
+
+    SCOPES = ['https://www.googleapis.com/auth/chat.bot']
+    credentials, project = google.auth.default(scopes=SCOPES)
+    chat = build('chat', 'v1', credentials=credentials)
+
+    # update content of an existing message
+    if message_id:
+        response_obj = chat.spaces().messages().update(
+            name=message_id,
+            updateMask='text',
+            body=body
+        ).execute()
+
+    # create a new message
+    else:
+        response_obj = chat.spaces().messages().create(
+            parent=space_name,
+            body=body
+        ).execute()
+
+    return response_obj.get("name")
