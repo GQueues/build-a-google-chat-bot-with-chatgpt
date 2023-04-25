@@ -62,6 +62,7 @@ Build a "Choose Your Own Adventure" story generator.
 **Google Chat API**
 - [Documentation](https://developers.google.com/chat/how-tos/apps-develop)
 - [Event Reference](https://developers.google.com/chat/api/reference/rest/v1/Event)
+- [Event Formats](https://developers.google.com/chat/api/guides/message-formats/events)
 - [Card Reference](https://developers.google.com/chat/api/reference/rest/v1/cards)
 - [Card Builder](https://gw-card-builder.web.app/)
 - [Text Formatting Reference](https://developers.google.com/chat/api/guides/message-formats/cards#card_text_formatting)
