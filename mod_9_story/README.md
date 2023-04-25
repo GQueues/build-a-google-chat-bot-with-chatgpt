@@ -485,6 +485,31 @@ def process_chat_message(user_text, thread_id, guidance=None):
     ...
 ```
 
+Update the first part of `handle_chat()` in `main.py` with the following code:
+
+```python
+def handle_chat(request):
+    """Handles incoming messages from Google Chat."""
+
+    event_data = request.get_json()
+    logging.info("received event_data %s" % event_data)
+
+    # routes background tasks for processing
+    if event_data.get("background_task", False):
+        return task_util.process_background_task(request)
+
+    # verify request is from Google before doing anything
+    if not is_request_valid(request):
+        return "Unauthorized request"
+
+    event_type = event_data['type']
+
+    # Bot added
+    if event_type == 'ADDED_TO_SPACE':
+        ...
+
+```
+
 <br />
 
 ### 8. Deploy the changes
