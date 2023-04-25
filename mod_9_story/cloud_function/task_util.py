@@ -78,8 +78,13 @@ def process_background_task(request):
     user_id = thread_id.split("-")[0]
 
     # get api_key
-    api_key = datastore_util.get_api_key(user_id)
-    openai.api_key = api_key
+    try:
+        api_key = datastore_util.get_api_key(user_id)
+        openai.api_key = api_key
+    except:
+        from main import MY_API_KEY
+        openai.api_key = MY_API_KEY
+
 
     if action == "process_story_message":
         story_util.process_story_message(thread_id, user_text, message_id_to_update)
