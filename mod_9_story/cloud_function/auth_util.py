@@ -12,7 +12,7 @@ PUBLIC_CERT_URL_PREFIX = 'https://www.googleapis.com/service_accounts/v1/metadat
 
 # Intended audience of the token, which will be the project number of the app.
 # TODO: Update audience with project number
-AUDIENCE = 'XXXXXXXXX'
+AUDIENCE = 'XXXXXXXXXXXX'
 
 def is_request_valid(request):
     """Verify the validity of a bearer token received by an app, using OAuth2Client.
