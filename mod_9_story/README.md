@@ -30,10 +30,11 @@ google-cloud-logging==3.0.0
 openai==0.27.2
 oauth2client==4.1.3
 google-cloud-ndb==2.1.1
-google-auth==2.17.2 # <-- add this line
-google-api-python-client==2.84.0 # <-- add this line
-google-cloud-tasks==2.13.1 # <-- add this line
-requests==2.28.2 # <-- add this line
+# >>>>> add the lines below >>>>>>
+google-auth==2.17.2
+google-api-python-client==2.84.0
+google-cloud-tasks==2.13.1
+requests==2.28.2
 ```
 
 ### 3. Create a new file called `story_util.py`
@@ -204,6 +205,8 @@ def update_placeholder_card(thread_id, message_id, content):
 
 def send_asynchronous_chat_message(thread_id, body, message_id=None):
     """Send a chat message to a space asynchronously.
+
+    If message_id is provided, it updates the existing message.
 
     Returns the message_id of the message created or updated.
 

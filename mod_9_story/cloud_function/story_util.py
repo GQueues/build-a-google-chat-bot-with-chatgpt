@@ -163,6 +163,8 @@ def update_placeholder_card(thread_id, message_id, content):
 def send_asynchronous_chat_message(thread_id, body, message_id=None):
     """Send a chat message to a space asynchronously.
 
+    If message_id is provided, it updates the existing message.
+
     Returns the message_id of the message created or updated.
 
     This message is NOT a direct response to an incoming message request.
