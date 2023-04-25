@@ -84,7 +84,24 @@ def handle_save_api_key(event_data):
             'actionResponse': {
                 'type': 'DIALOG',
                 'dialogAction': {
-                    'actionStatus': 'OK'
+                    'dialog': {
+                        'body': {
+                            "sections": [
+                                {
+                                    "widgets": [
+                                        {
+                                            "decoratedText": {
+                                                "topLabel": "",
+                                                "text": "API key saved.",
+                                                "bottomLabel": "",
+                                                "wrapText": True
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
                 }
             }
         }
