@@ -370,15 +370,22 @@ PROJECT_ID = "XXXXXXX"
 SERVICE_ACCOUNT_EMAIL = "xxxxxxxxxxxxxxx"
 TRIGGER_URL = "xxxxxxxxxxxxx"
 ```
+
+Copy from [Cloud Project Dashboard](https://console.cloud.google.com/home/dashboard)
+
 <img 
     src="images/story_project_id.png"
     alt="Google Cloud ProjectID"
     width="500">
 
+Copy from [Cloud Functions Details](https://console.cloud.google.com/functions/details/us-central1/chatgpt-bot?tab=details)
+
 <img 
     src="images/story_service_account.png"
     alt="Cloud Functions service account"
     width="500">
+
+Copy from [Cloud Functions Trigger](https://console.cloud.google.com/functions/details/us-central1/chatgpt-bot?tab=trigger)
 
 <img 
     src="images/story_trigger_url.png"
