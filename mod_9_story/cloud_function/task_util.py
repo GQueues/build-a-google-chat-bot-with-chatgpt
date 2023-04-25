@@ -10,10 +10,10 @@ import datastore_util
 PROJECT_ID = "XXXXXXX"
 
 # TODO: Update with Cloud Functions Service Account
-SERVICE_ACCOUNT_EMAIL = 'xxxxxxxxxxxxxxx'
+SERVICE_ACCOUNT_EMAIL = "xxxxxxxxxxxxxxx"
 
 # TODO: Update with Cloud Functions Trigger Url
-TRIGGER_URL = "xxxxxxxxxxxxx'
+TRIGGER_URL = "xxxxxxxxxxxxx"
 
 
 def run_as_background_task(action, thread_id, user_text, message_id_to_update):

@@ -6,7 +6,31 @@ You can either complete the steps in [Module 8](../mod_8_dialogs#readme) or use 
 
 ## Steps
 
-### 1. Add a slash command
+### 1. Enable Cloud Tasks API
+Go to the [Cloud Tasks API](https://console.cloud.google.com/marketplace/details/google/cloudtasks.googleapis.com) and click the **ENABLE** button.
+
+<img 
+    src="images/story_enable_tasks.png"
+    alt="Enable Tasks API"
+    width="400">
+
+### 2. Create a Push Queue
+Go to [Cloud Tasks](https://console.cloud.google.com/cloudtasks) and create a queue for background tasks by clicking **CREATE PUSH QUEUE**.
+
+<img 
+    src="images/story_create_queue.png"
+    alt="Create Push Queue"
+    width="600">
+
+Name the queue `story-queue` and select `us-central1` for the region and click **CREATE**.
+
+<img 
+    src="images/story_queue_settings.png"
+    alt="Queue Settings"
+    width="600">
+
+
+### 3. Add a slash command
 Open the Google Chat API [Configuration tab](https://console.cloud.google.com/apis/api/chat.googleapis.com/hangouts-chat) and scroll to the **Slash commands** section.
 
 Create a new `/story` command by clicking **ADD A NEW SLASH COMMAND**:
@@ -18,7 +42,7 @@ Create a new `/story` command by clicking **ADD A NEW SLASH COMMAND**:
 
 Click **DONE** and **SAVE** to apply your changes.
 
-### 2. Add new libraries
+### 4. Add new libraries
 Open the `requirements.txt` file and add the four libraries below as a dependencies so you can use them in code. 
 
 ```python
@@ -37,7 +61,7 @@ google-cloud-tasks==2.13.1
 requests==2.28.2
 ```
 
-### 3. Create a new file called `story_util.py`
+### 5. Create a new file called `story_util.py`
 Create a new file called `story_util.py` with the following code that takes a story prompt and generates a title, cover image, and chapters with images for each part of the story.
 
 ```python
@@ -239,7 +263,7 @@ def send_asynchronous_chat_message(thread_id, body, message_id=None):
     return response_obj.get("name")
 ```
 
-### 4. Create a new file called `task_util.py`
+### 6. Create a new file called `task_util.py`
 Create a new file called `task_util.py` with the following code that creates tasks to run and process in the background using Google Cloud Tasks.
 
 ```python
@@ -255,10 +279,10 @@ import datastore_util
 PROJECT_ID = "XXXXXXX"
 
 # TODO: Update with Cloud Functions Service Account
-SERVICE_ACCOUNT_EMAIL = 'xxxxxxxxxxxxxxx'
+SERVICE_ACCOUNT_EMAIL = "xxxxxxxxxxxxxxx"
 
 # TODO: Update with Cloud Functions Trigger Url
-TRIGGER_URL = "xxxxxxxxxxxxx'
+TRIGGER_URL = "xxxxxxxxxxxxx"
 
 
 def run_as_background_task(action, thread_id, user_text, message_id_to_update):
@@ -334,8 +358,37 @@ def process_background_task(request):
     
     return {}
 ```
+### 7. Update placeholders in `task_util.py`
+Replace the placeholders at the top of `task_util.py` with their actual values.
 
-### 5. Update `auth_util.py`
+```python
+PROJECT_ID = "XXXXXXX"
+SERVICE_ACCOUNT_EMAIL = "xxxxxxxxxxxxxxx"
+TRIGGER_URL = "xxxxxxxxxxxxx"
+```
+<img 
+    src="images/story_project_id.png"
+    alt="Google Cloud ProjectID"
+    width="500">
+
+<img 
+    src="images/story_service_account.png"
+    alt="Cloud Functions service account"
+    width="500">
+
+<img 
+    src="images/story_trigger_url.png"
+    alt="Cloud Functions trigger URL"
+    width="500">
+
+For example...
+```python
+PROJECT_ID = "chatgpt-bot-384221"
+SERVICE_ACCOUNT_EMAIL = "chatgpt-bot-384221@appspot.gserviceaccount.com"
+TRIGGER_URL = "https://us-central1-chatgpt-bot-384221.cloudfunctions.net/chatgpt-bot"
+```
+
+### 8. Update `auth_util.py`
 
 Import `google.auth`, `requests` and the constants from `task-util`  at the top of `auth_util.py` so you can use them in this file.
 
@@ -382,7 +435,7 @@ def is_backround_request_valid(request):
         return False
 ```
 
-### 5. Update `models.py`
+### 9. Update `models.py`
 Add a `thread_type` attribute to the Thread entity to track if the bot currently in a story.
 ```python
 class Thread(ndb.Model):
@@ -394,7 +447,7 @@ class Thread(ndb.Model):
         return self.message_history['messages']
 ```
 
-### 6. Update `datastore_util.py`
+### 10. Update `datastore_util.py`
 Update the `store_messages()` function definition to accept a new optional `thread_type` parameter and store it on the entity. Use the code below to update the function:
 
 ```python
@@ -414,7 +467,7 @@ def store_messages(thread_id, messages=[], thread_type=""):
         thread.put()
 ```
 
-### 7. Update `main.py`
+### 11. Update `main.py`
 Import `story_util` and `task_util` at the top of `main.py` so you can use them in this file.
 ```python
 import flask
@@ -432,7 +485,33 @@ import story_util # <-- add this line
 import task_util # <-- add this line
 ```
 
+Update the first part of `handle_chat()` in `main.py` with the following code:
+
+```python
+def handle_chat(request):
+    """Handles incoming messages from Google Chat."""
+
+    event_data = request.get_json()
+    logging.info("received event_data %s" % event_data)
+
+    # routes background tasks for processing
+    if event_data.get("background_task", False):
+        return task_util.process_background_task(request)
+
+    # verify request is from Google before doing anything
+    if not is_request_valid(request):
+        return "Unauthorized request"
+
+    event_type = event_data['type']
+
+    # Bot added
+    if event_type == 'ADDED_TO_SPACE':
+        ...
+
+```
+
 Update the code in `process_message_event()` to handle the `/story` command:
+
 ```python
 def process_message_event(event_data):
 
@@ -458,6 +537,7 @@ def process_message_event(event_data):
 ```
 
 Update `process_chat_message()` to check the `thread_type` to handle story processing.
+
 ```python
 def process_chat_message(user_text, thread_id, guidance=None):
 
@@ -488,34 +568,10 @@ def process_chat_message(user_text, thread_id, guidance=None):
     ...
 ```
 
-Update the first part of `handle_chat()` in `main.py` with the following code:
-
-```python
-def handle_chat(request):
-    """Handles incoming messages from Google Chat."""
-
-    event_data = request.get_json()
-    logging.info("received event_data %s" % event_data)
-
-    # routes background tasks for processing
-    if event_data.get("background_task", False):
-        return task_util.process_background_task(request)
-
-    # verify request is from Google before doing anything
-    if not is_request_valid(request):
-        return "Unauthorized request"
-
-    event_type = event_data['type']
-
-    # Bot added
-    if event_type == 'ADDED_TO_SPACE':
-        ...
-
-```
 
 <br />
 
-### 8. Deploy the changes
+### 12. Deploy the changes
 Click **DEPLOY** to set your changes live.
 
 
