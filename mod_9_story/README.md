@@ -617,6 +617,11 @@ You probably already have many ideas about what you want to build next. Here are
 
 <br />
 
+## Workshop Slides
+[Build a Google Chat Bot Powered by ChatGPT (slides)](https://docs.google.com/presentation/d/e/2PACX-1vQ6e1Us_JU0umqnzW9ZwCGpWCS7h4cCP7Cm65Jjx789zRgmdjn14ScPYwWQXIYls9ekmNYBBXjohRZ_/pub?start=false&loop=false&delayms=5000&slide=id.g238bba54854_0_61)
+
+<br />
+
 ## Workshop Feedback
 Let me know what you thought of this workshop!
 
