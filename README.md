@@ -58,6 +58,23 @@ Improve the setup experience by using a dialog.
 - [Module 9 - Interactive Story](mod_9_story#readme)<br />
 Build a "Choose Your Own Adventure" story generator.
 
+## Workshop
+This code lab was presented as a [workshop for the Google Developer Student Club](https://gdsc.community.dev/events/details/developer-student-clubs-university-of-colorado-boulder-presents-build-a-google-chat-bot-powered-by-chatgpt/) at the University of Colorado in Boulder.
+
+[Workshop Slides](https://docs.google.com/presentation/d/e/2PACX-1vQ6e1Us_JU0umqnzW9ZwCGpWCS7h4cCP7Cm65Jjx789zRgmdjn14ScPYwWQXIYls9ekmNYBBXjohRZ_/pub?start=false&loop=false&delayms=5000&slide=id.g238bba54854_0_61)
+
+[Workshop Video](https://www.youtube.com/watch?v=3Qs8ztnV_5U)
+
+<a href="https://www.youtube.com/watch?v=3Qs8ztnV_5U">
+<img 
+    src="mod_9_story/images/video_thumbnail.png"
+    alt="Workshop Video"
+    width="800">
+    </a>
+
+<br />
+<br />
+
 ## References
 **Google Chat API**
 - [Documentation](https://developers.google.com/chat/how-tos/apps-develop)
